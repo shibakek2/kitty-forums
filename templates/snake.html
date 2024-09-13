@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.min.js"></script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+</head>
+<body>
+    <ul id="messages"></ul>
+    <form id="message-form">
+        <input type="text" id="message-input" autocomplete="off">
+        <button>Send</button>
+    </form>
+    <script src="https://cdn.socket.io/socket.io-4.3.2.min.js"></script>
+    <script>
+        var socket = io();
+
+        socket.on('message', function(data) {
+            var item = document.createElement('li');
+            item.textContent = data.message;
+            document.getElementById('messages').appendChild(item);
+        });
+
+        document.getElementById('message-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var messageInput = document.getElementById('message-input');
+            var message = messageInput.value.trim();
+            if (message) {
+                socket.emit('message', { message: message });
+                messageInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

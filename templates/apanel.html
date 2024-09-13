@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum List</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            background-color: #444444;
+            padding: 10px;
+        }
+        .navbar button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        .navbar button:hover {
+            background-color: #888888;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background: #2e2e2e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            padding: 10px;
+            width: 60%;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-family: inherit;
+        }
+        .search-bar button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #666666;
+            color: #ffffff;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .forum-post {
+            border-bottom: 1px solid #999999;
+            padding: 10px 0;
+            position: relative;
+        }
+        .forum-post h2 {
+            margin: 0;
+            color: #00ff00;
+        }
+        .forum-post p {
+            margin: 5px 0;
+        }
+        .comments {
+            margin-left: 20px;
+            margin-top: 10px;
+            background-color: #444444;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .comment {
+            border-bottom: 1px solid #999999;
+            padding: 5px 0;
+            position: relative;
+        }
+        .pagination {
+            margin: 10px 0;
+            text-align: center;
+        }
+        .pagination button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        .pagination button:hover {
+            background-color: #888888;
+        }
+        .comment-input {
+            margin-top: 10px;
+        }
+        .comment-input textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #999999;
+            background-color: #444444;
+            color: #e0e0e0;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .comment-input button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-right: 10px; /* Added margin for spacing */
+            font-family: inherit;
+        }
+        .post-stats {
+            margin-top: 10px;
+        }
+        .error-message {
+            color: #ff0000;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .delete-btn, .ban-btn {
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-family: inherit;
+        }
+        .delete-btn {
+            background-color: #ff0000;
+        }
+        .delete-btn:hover {
+            background-color: #ff5555;
+        }
+        .ban-btn {
+            background-color: #666666;
+            right: 100px;
+        }
+        .ban-btn:hover {
+            background-color: #888888;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <button onclick="location.href='/settings'">Settings</button>
+        <button onclick="location.href='/logout'">Logout</button>
+        <button onclick="location.href='/create-post'">Create Post</button>
+        <button onclick="location.href='/auserpanel'">User Panel</button>
+        <button onclick="location.href='/home'">Toggle Mod View</button>
+    </div>
+    <div class="container">
+        <h1>kitty-forums.lol</h1>
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search for forms..." oninput="liveSearch()">
+            <button onclick="searchForms()">Search</button>
+        </div>
+        <div id="forum-list"></div>
+        <div class="pagination" id="post-pagination"></div>
+        <div id="error-message" class="error-message" style="display: none;"></div>
+    </div>
+
+    <script>
+        let allForms = [];
+        const postsPerPage = 50;
+
+        async function fetchForms() {
+            try {
+                const response = await fetch('https://kitty-forums.lol/api/form/V1/list-forms', { 
+                    method: 'POST', 
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+
+                const data = await response.json();
+                allForms = data.forms;
+                showPosts(1);
+            } catch (error) {
+                console.error('Error fetching forms:', error);
+                document.getElementById('error-message').innerText = 'Error fetching forms. Please try again later.';
+                document.getElementById('error-message').style.display = 'block';
+            }
+        }
+
+        async function showPosts(page) {
+            const forumList = document.getElementById('forum-list');
+            forumList.innerHTML = '';
+            const reversedForms = [...allForms].reverse();
+            const start = (page - 1) * postsPerPage;
+            const end = start + postsPerPage;
+            const paginatedForms = reversedForms.slice(start, end);
+                
+            if (paginatedForms.length === 0) {
+                forumList.innerHTML = '<p>No forums available.</p>';
+                document.getElementById('post-pagination').innerHTML = '';
+                return;
+            }
+        
+            for (const formUrl of paginatedForms) {
+                const secureFormUrl = formUrl.replace('http://', 'https://');
+                try {
+                    const formResponse = await fetch(secureFormUrl, {
+                        headers: {
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
+                        }
+                    });
+                
+                    if (!formResponse.ok) {
+                        throw new Error('Network response was not ok ' + formResponse.statusText);
+                    }
+                
+                    const formData = await formResponse.json();
+                    displayForm(forumList, formData);
+                } catch (error) {
+                    console.error('Error fetching form data:', error);
+                }
+            }
+        
+            setupPagination(allForms.length, page);
+        }
+
+        function displayForm(container, form) {
+            const formDiv = document.createElement('div');
+            formDiv.className = 'forum-post';
+            formDiv.innerHTML = `
+                <h2>${form.title.replace(/-/g, ' ')}</h2>
+                <button class="delete-btn" onclick="deletePost('${form.title.replace(/-/g, ' ')}')">Delete Post</button>
+                <br>
+                <button class="ban-btn" onclick="banUser('${form.author}')">Ban User</button>
+                <br>
+                <p>${form.message}</p>
+                <br>  
+                <div class="comment-input">
+                    <textarea id="comment-text-${form.title.replace(/\s/g, '-')}" placeholder="Add a comment..."></textarea>
+                    <div class="post-stats">
+                    <p>Likes: ${form.likes}, Dislikes: ${form.dislikes}, Views: ${form.views}, Shares: ${form.shares}, Comments: ${form.comments.length}</p>
+                    <p>Created by <strong>${form.author}</strong> on ${form.created_at}</p>
+                </div>
+                <div class="comments" id="comments-${form.title.replace(/\s/g, '-')}" data-comments='${JSON.stringify(form.comments)}'></div>
+                    <button onclick="addComment('${form.title.replace(/-/g, ' ')}', 'comment-text-${form.title.replace(/\s/g, '-')}')">Submit</button>
+                </div>
+            `;
+            container.appendChild(formDiv);
+            showComments(form.title.replace(/\s/g, '-'), 1);
+        }
+
+        function showComments(formTitle, page) {
+            const commentsDiv = document.getElementById(`comments-${formTitle}`);
+            const commentsData = JSON.parse(commentsDiv.getAttribute('data-comments'));
+            const commentsPerPage = 5;
+                
+            commentsData.sort((a, b) => {
+                const dateA = new Date(a.commented_at.split('/').reverse().join('/'));
+                const dateB = new Date(b.commented_at.split('/').reverse().join('/'));
+                return dateB - dateA;
+            });
+        
+            const start = (page - 1) * commentsPerPage;
+            const end = start + commentsPerPage;
+            const paginatedComments = commentsData.slice(start, end);
+        
+            commentsDiv.innerHTML = paginatedComments.map((comment, index) => `
+                <div class="comment">
+                    <p><strong>${comment.commenter}</strong>: </p>
+                    <p>${comment.comment}</p>
+                    <button class="delete-btn" onclick="deleteComment('${formTitle}', ${index}, ${page})">Delete Comment</button>
+                    <br>
+                    <button class="ban-btn" onclick="banUser('${comment.commenter}')">Ban User</button>
+                </div>
+            `).join('');
+            
+            if (commentsData.length > commentsPerPage) {
+                const paginationDiv = document.createElement('div');
+                paginationDiv.className = 'pagination';
+                for (let i = 1; i <= Math.ceil(commentsData.length / commentsPerPage); i++) {
+                    paginationDiv.innerHTML += `<button onclick="showComments('${formTitle}', ${i})">${i}</button>`;
+                }
+                commentsDiv.appendChild(paginationDiv);
+            }
+        }
+
+
+        async function addComment(formTitle, commentTextId) {
+            const commentText = document.getElementById(commentTextId).value;
+            const commenter = "{{ username }}";
+            const formTitleWithHyphens = formTitle.replace(/\s/g, '-');
+
+            const commentData = {
+                title: formTitleWithHyphens,
+                comment: commentText,
+                commenter: commenter,
+                token: "{{ token }}"
+            };
+
+            try {
+                const response = await fetch('https://kitty-forums.lol/api/form/V1/add-comment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    },
+                    body: JSON.stringify(commentData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+
+                fetchForms();
+            } catch (error) {
+                console.error('Error adding comment:', error);
+            }
+        }
+
+        async function deletePost(formTitle) {
+            const formTitleWithHyphens = formTitle.replace(/\s/g, '-');
+            const postData = {
+                title: formTitleWithHyphens,
+                username: "{{ username }}",
+                token: "{{ token }}"
+            };
+
+            try {
+                const response = await fetch('https://kitty-forums.lol/api/form/V1/delete-post', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+
+                fetchForms();
+            } catch (error) {
+                console.error('Error deleting post:', error);
+            }
+        }
+
+        async function deleteComment(formTitle, commentIndex, page) {
+            const formTitleWithHyphens = formTitle.replace(/\s/g, '-');
+            const commentsPerPage = 5;
+            const actualCommentIndex = (page - 1) * commentsPerPage + commentIndex;
+            const commentData = {
+                title: formTitleWithHyphens,
+                comment_index: actualCommentIndex,
+                username: "{{ username }}",
+                token: "{{ token }}"
+            };
+        
+            try {
+                const response = await fetch('https://kitty-forums.lol/api/form/V1/delete-comment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    },
+                    body: JSON.stringify(commentData)
+                });
+            
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+            
+                // Reload comments for the current form to update the UI
+                fetchForms();
+            } catch (error) {
+                console.error('Error deleting comment:', error);
+            }
+        }
+
+        async function banUser(username) {
+            const banData = {
+                busername: username,
+                token: "{{ token }}",
+                username: "{{ username }}"
+            };
+
+            try {
+                const response = await fetch('/blacklist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    },
+                    body: JSON.stringify(banData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(`User ${username} was banned successfully.`);
+                } else {
+                    alert(`Error banning user: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error banning user:', error);
+            }
+        }
+
+        async function searchForms() {
+            const query = document.getElementById('search-input').value;
+            if (query.trim() === '') {
+                fetchForms();
+                return;
+            }
+            try {
+                const response = await fetch(`/api/form/V1/search?form=${encodeURIComponent(query)}`, { 
+                    method: 'GET', 
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+
+                const data = await response.json();
+                if (data.forms) {
+                    allForms = data.forms.map(f => f.url);
+                    showPosts(1);
+                    document.getElementById('error-message').style.display = 'none';
+                } else {
+                    document.getElementById('forum-list').innerHTML = '<p>No forms found.</p>';
+                    document.getElementById('post-pagination').innerHTML = '';
+                    document.getElementById('error-message').innerText = 'No forms found matching the query.';
+                    document.getElementById('error-message').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error searching forms:', error);
+                document.getElementById('error-message').innerText = 'Error searching forms. Please try again later.';
+                document.getElementById('error-message').style.display = 'block';
+            }
+        }
+
+        function liveSearch() {
+            searchForms();
+        }
+
+        fetchForms();
+    </script>
+</body>
+</html>

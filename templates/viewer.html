@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch Request</title>
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Free twitch view bot/follow bot!">
+    <meta name="twitter:description" content="Bot twitch view/followers for 100% free!">
+    <meta name="twitter:url" content="https://kitty-forums.lol">
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            background-color: #444444;
+            padding: 10px;
+        }
+        .navbar button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        .navbar button:hover {
+            background-color: #888888;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background: #2e2e2e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            padding: 10px;
+            width: 60%;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-family: inherit;
+        }
+        .search-bar button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #666666;
+            color: #ffffff;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button[type="submit"] {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #666666;
+            color: #ffffff;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 20px;
+        }
+        .post-stats {
+            margin-top: 10px;
+        }
+        .error-message {
+            color: #ff0000;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .result-textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            margin-top: 10px;
+            font-family: inherit;
+            resize: none;
+            background-color: #2e2e2e;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <button onclick="location.href='/create-post'">Create Post</button>
+        <button onclick="location.href='/home'">Home</button>
+    </div>
+    <div class="container">
+        <h1>Generate Twitch Integrity Token</h1>
+        <form id="integrityForm">
+            <div class="search-bar">
+                <label for="token">Token:</label>
+                <input type="text" id="token" name="token" required>
+            </div>
+            <button type="submit">Generate Integrity</button>
+            <textarea id="integrityResult" class="result-textarea" readonly></textarea>
+        </form>
+
+        <h1>Twitch Viewers</h1>
+        <form id="twitchViewForm">
+            <div class="search-bar">
+                <label for="viewChannel">Channel:</label>
+                <input type="text" id="viewChannel" name="channel" required>
+            </div>
+            <div class="search-bar">
+                <label for="viewAmount">Amount:</label>
+                <input type="number" id="viewAmount" name="amount" required>
+            </div>
+            <button type="submit">Send Viewers</button>
+        </form>
+        <p id="viewResult"></p>
+
+        <h1>Twitch Ad Viewers</h1>
+        <form id="twitchadViewForm">
+            <div class="search-bar">
+                <label for="adviewChannel">Channel:</label>
+                <input type="text" id="adviewChannel" name="channel" required>
+            </div>
+            <div class="search-bar">
+                <label for="adviewAmount">Amount:</label>
+                <input type="number" id="adviewAmount" name="amount" required>
+            </div>
+            <button type="submit">Send Viewers</button>
+        </form>
+        <p id="adviewResult"></p>
+
+        <h1>Twitch Followers</h1>
+        <form id="twitchFollowForm">
+            <div class="search-bar">
+                <label for="followChannel">Channel:</label>
+                <input type="text" id="followChannel" name="channel" required>
+            </div>
+            <div class="search-bar">
+                <label for="followAmount">Amount:</label>
+                <input type="number" id="followAmount" name="amount" required>
+            </div>
+            <button type="submit">Send Followers</button>
+        </form>
+        <p id="followResult"></p>
+
+        <h1>Twitch Unfollowers</h1>
+        <form id="twitchUnfollowForm">
+            <div class="search-bar">
+                <label for="unfollowChannel">Channel:</label>
+                <input type="text" id="unfollowChannel" name="channel" required>
+            </div>
+            <div class="search-bar">
+                <label for="unfollowAmount">Amount:</label>
+                <input type="number" id="unfollowAmount" name="amount" required>
+            </div>
+            <button type="submit">Send Unfollowers</button>
+        </form>
+        <p id="unfollowResult"></p>
+    </div>
+
+    <script>
+        document.getElementById('integrityForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const token = document.getElementById('token').value;
+            const result = document.getElementById('integrityResult');
+
+            try {
+                const response = await fetch('/api/twitch/v1/generate-integrity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    result.value = `Integrity Token: ${data.success}`;
+                } else {
+                    result.value = `Error: ${data.message}`;
+                }
+            } catch (error) {
+                result.value = 'An error occurred: ' + error.message;
+            }
+        });
+
+        document.getElementById('twitchViewForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const channel = document.getElementById('viewChannel').value;
+            const amount = document.getElementById('viewAmount').value;
+            const result = document.getElementById('viewResult');
+
+            try {
+                const response = await fetch('/api/twitch/v1/view', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ channel, amount })
+                });
+
+                const data = await response.json();
+                result.textContent = `${data.success}`;
+            } catch (error) {
+                result.textContent = 'An error occurred: ' + error.message;
+            }
+        });
+
+        
+        document.getElementById('twitchadViewForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const channel = document.getElementById('adviewChannel').value;
+            const amount = document.getElementById('adviewAmount').value;
+            const result = document.getElementById('adviewResult');
+
+            try {
+                const response = await fetch('/api/twitch/v1/ad-view', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ channel, amount })
+                });
+            
+                const data = await response.json();
+                result.textContent = `${data.success}`;
+            } catch (error) {
+                result.textContent = 'An error occurred: ' + error.message;
+            }
+        });
+
+        document.getElementById('twitchFollowForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const channel = document.getElementById('followChannel').value;
+            const amount = document.getElementById('followAmount').value;
+            const result = document.getElementById('followResult');
+
+            try {
+                const response = await fetch('/api/twitch/v1/follow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ channel, amount })
+                });
+
+                const data = await response.json();
+                result.textContent = `${data.success}`;
+            } catch (error) {
+                result.textContent = 'An error occurred: ' + error.message;
+            }
+        });
+
+        document.getElementById('twitchUnfollowForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const channel = document.getElementById('unfollowChannel').value;
+            const amount = document.getElementById('unfollowAmount').value;
+            const result = document.getElementById('unfollowResult');
+
+            try {
+                const response = await fetch('/api/twitch/v1/follow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ channel, amount })
+                });
+
+                const data = await response.json();
+                result.textContent = `${data.success}`;
+            } catch (error) {
+                result.textContent = 'An error occurred: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
