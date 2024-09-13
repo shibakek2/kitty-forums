@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Thread</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            background-color: #444444;
+            padding: 10px;
+        }
+        .navbar button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        .navbar button:hover {
+            background-color: #888888;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 40px auto;
+            background: #2e2e2e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            padding: 10px;
+            width: 60%;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-family: inherit;
+        }
+        .search-bar button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #666666;
+            color: #ffffff;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .forum-post {
+            border-bottom: 1px solid #999999;
+            padding: 10px 0;
+            position: relative;
+        }
+        .forum-post h2 {
+            margin: 0;
+            color: #00ff00;
+        }
+        .forum-post p {
+            margin: 5px 0;
+        }
+        .comments {
+            margin-left: 20px;
+            margin-top: 10px;
+            background-color: #444444;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .comment {
+            border-bottom: 1px solid #999999;
+            padding: 5px 0;
+            position: relative;
+        }
+        .pagination {
+            margin: 10px 0;
+            text-align: center;
+        }
+        .pagination button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        .pagination button:hover {
+            background-color: #888888;
+        }
+        .comment-input {
+            margin-top: 10px;
+        }
+        .comment-input textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #999999;
+            background-color: #444444;
+            color: #e0e0e0;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .comment-input button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-right: 10px; /* Added margin for spacing */
+            font-family: inherit;
+        }
+        .post-stats {
+            margin-top: 10px;
+        }
+        .error-message {
+            color: #ff0000;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .delete-btn, .ban-btn {
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-family: inherit;
+        }
+        .delete-btn {
+            background-color: #ff0000;
+        }
+        .delete-btn:hover {
+            background-color: #ff5555;
+        }
+        .ban-btn {
+            background-color: #666666;
+            right: 100px;
+        }
+        .ban-btn:hover {
+            background-color: #888888;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #00ff00;
+        }
+        form input[type="text"],
+        form textarea,
+        form select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #999999;
+            background-color: #444444;
+            color: #e0e0e0;
+            font-family: inherit;
+        }
+        form input[type="submit"] {
+            background-color: #00ff00;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+            align-self: flex-start;
+        }
+        form input[type="submit"]:hover {
+            background-color: #00cc00;
+        }
+        p a {
+            color: #00ff00;
+            text-decoration: none;
+        }
+        p a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Thread</h1>
+        <form id="submitForm">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required>
+
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" rows="4" cols="50" required></textarea>
+
+            <label for="topic">Topic:</label>
+            <select id="topic" name="topic" required>
+                <option value="" disabled selected>Select a topic</option>
+            </select>
+            
+            <input type="submit" value="Submit">
+        </form>
+
+        <p>By posting, you agree to these <a href="https://kitty-forums.lol/rules" target="_blank">rules</a>.</p>
+        <p id="responseMessage"></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('https://kitty-forums.lol/api/topic/V1/get-topics')
+                .then(response => response.json())
+                .then(data => {
+                    const topicSelect = document.getElementById('topic');
+                    data.forEach(topic => {
+                        const option = document.createElement('option');
+                        option.value = topic;
+                        option.textContent = topic.charAt(0).toUpperCase() + topic.slice(1);
+                        topicSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching topics:', error);
+                });
+        });
+    
+        document.getElementById('submitForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            formData.append('token', '{{ token }}');
+            formData.append('topic', document.getElementById('topic').value);
+    
+            fetch('https://kitty-forums.lol/api/form/V1/submit-form', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.link) {
+                    document.getElementById('responseMessage').innerHTML = `<a href="${data.link}" target="_blank">Click here to view your thread</a>`;
+                } else {
+                    document.getElementById('responseMessage').innerText = data.message || data.error;
+                }
+            })
+            .catch(error => {
+                document.getElementById('responseMessage').innerText = 'An error occurred: ' + error.message;
+            });
+        });
+    </script>
+</body>
+</html>

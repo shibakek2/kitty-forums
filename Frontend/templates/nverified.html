@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #808080; /* Gray background */
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .message-container {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #333;
+            animation: fadeInOut 4s infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+    <title>Email Verification</title>
+</head>
+<body>
+    <div class="message-container">
+        <h1>Check your inbox to verify your email</h1>
+    </div>
+</body>
+</html>

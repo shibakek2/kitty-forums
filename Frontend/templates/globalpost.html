@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ form_data.title }}</title>
+      <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ form_data.title }}">
+    <meta name="twitter:description" content="{{ form_data.message }}">
+    <meta name="twitter:url" content="https://kitty-forums.lol">
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: flex-end;
+            background-color: #444444;
+            padding: 10px;
+        }
+        .navbar button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        .navbar button:hover {
+            background-color: #888888;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background: #2e2e2e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            padding: 10px;
+            width: 60%;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-family: inherit;
+        }
+        .search-bar button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #666666;
+            color: #ffffff;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .forum-post {
+            border-bottom: 1px solid #999999;
+            padding: 10px 0;
+            position: relative;
+        }
+        .forum-post h2 {
+            margin: 0;
+            color: #00ff00;
+        }
+        .forum-post p {
+            margin: 5px 0;
+        }
+        .comments {
+            margin-left: 20px;
+            margin-top: 10px;
+            background-color: #444444;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .comment {
+            border-bottom: 1px solid #999999;
+            padding: 5px 0;
+            position: relative;
+        }
+        .pagination {
+            margin: 10px 0;
+            text-align: center;
+        }
+        .pagination button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        .pagination button:hover {
+            background-color: #888888;
+        }
+        .comment-input {
+            margin-top: 10px;
+        }
+        .comment-input textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #999999;
+            background-color: #444444;
+            color: #e0e0e0;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .comment-input button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-right: 10px; /* Added margin for spacing */
+            font-family: inherit;
+        }
+        .post-stats {
+            margin-top: 10px;
+        }
+        .error-message {
+            color: #ff0000;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .delete-btn, .ban-btn {
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-family: inherit;
+        }
+        .delete-btn {
+            background-color: #ff0000;
+        }
+        .delete-btn:hover {
+            background-color: #ff5555;
+        }
+        .ban-btn {
+            background-color: #666666;
+            right: 100px;
+        }
+        .ban-btn:hover {
+            background-color: #888888;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <button onclick="location.href='/sign-in'">Sign in</button>
+        <button onclick="location.href='/sign-up'">Sign up</button>
+        <button onclick="location.href='/create-post'">Create Post</button>
+    </div>
+    <div class="container">
+        <h1>kitty-forums.lol</h1>
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search for forms...">
+            <button onclick="searchForms()">Search</button>
+        </div>
+        <div id="forum-list"></div>
+        <div class="pagination" id="post-pagination"></div>
+        <div id="error-message" class="error-message" style="display: none;"></div>
+
+        {% if form_data %}
+            <div class="forum-post" id="forum-post">
+                <h2>{{ form_data.title }}</h2>
+                <p>by <strong>{{ form_data.author }}</strong> on {{ form_data.created_at }}</p>
+                <p id="message">{{ form_data.message }}</p>
+                <p>Likes: {{ form_data.likes }}, Dislikes: {{ form_data.dislikes }}, Views: {{ form_data.views }}, Shares: {{ form_data.shares }}</p>
+                <p>Comments: {{ form_data.comments | length }}</p>
+                <div class="comments">
+                    {% for comment in form_data.comments %}
+                        <div class="comment">
+                            <p><strong>{{ comment.commenter }}</strong> on {{ comment.commented_at }}</p>
+                            <p class="comment-text">{{ comment.comment }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <p>No form data available</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function formatText() {
+            const messageElement = document.getElementById('message');
+            if (messageElement) {
+                messageElement.innerHTML = messageElement.innerHTML
+                    .replace(/&gt;/g, '>')
+                    .replace(/\r\n|\r|\n/g, '<br>');
+            }
+
+            document.querySelectorAll('.comment-text').forEach(paragraph => {
+                paragraph.innerHTML = paragraph.innerHTML
+                    .replace(/&gt;/g, '>')
+                    .replace(/\r\n|\r|\n/g, '<br>');
+            });
+        }
+
+        function searchForms() {
+            window.location.href = 'https://kitty-forums.lol';
+        }
+
+        document.addEventListener('DOMContentLoaded', formatText);
+    </script>
+</body>
+</html>
